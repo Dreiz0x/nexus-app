@@ -1,2 +1,0 @@
-# nexus-app
-El bueno
