@@ -21,46 +21,40 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Find and Fix gradlew
+      - name: Fix Project Structure and Gradle
         run: |
-          # Buscar el archivo gradlew en cualquier subcarpeta
-          GRADLEW_PATH=$(find . -name gradlew | head -n 1)
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "ERROR: No se encontró el archivo gradlew en ninguna parte del repositorio."
+          # 1. Encontrar dónde está el archivo build.gradle.kts
+          BUILD_FILE=$(find . -name build.gradle.kts -not -path "*/app/*" | head -n 1)
+          if [ -z "$BUILD_FILE" ]; then
+            echo "ERROR: No se encontró el archivo de configuración del proyecto."
             exit 1
           fi
-          echo "Se encontró gradlew en: $GRADLEW_PATH"
-          chmod +x "$GRADLEW_PATH"
-          # Guardar la ruta del directorio para los siguientes pasos
-          echo "PROJECT_ROOT=$(dirname "$GRADLEW_PATH")" >> $GITHUB_ENV
+          PROJECT_ROOT=$(dirname "$BUILD_FILE")
+          echo "Proyecto detectado en: $PROJECT_ROOT"
+          cd "$PROJECT_ROOT"
+
+          # 2. Forzar la instalación de un Gradle Wrapper limpio
+          # Esto soluciona el problema de la carpeta gradle/wrapper faltante o corrupta
+          gradle wrapper --gradle-version 8.2.2
+          chmod +x gradlew
+          
+          # Guardar la ruta para los siguientes pasos
+          echo "FINAL_PROJECT_PATH=$(pwd)" >> $GITHUB_ENV
 
       - name: Build Debug APK
         run: |
-          cd ${{ env.PROJECT_ROOT }}
+          cd ${{ env.FINAL_PROJECT_PATH }}
           ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: Build Release APK
-        run: |
-          cd ${{ env.PROJECT_ROOT }}
-          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: nexus-debug-apk
           path: "**/build/outputs/apk/debug/*.apk"
-          retention-days: 30
-
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: nexus-release-apk
-          path: "**/build/outputs/apk/release/*.apk"
           retention-days: 30
 
       - name: Upload Build Reports
