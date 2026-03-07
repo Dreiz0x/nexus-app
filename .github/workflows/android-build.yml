@@ -26,37 +26,41 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+      - name: Find and Fix gradlew
+        run: |
+          # Buscar el archivo gradlew en cualquier subcarpeta
+          GRADLEW_PATH=$(find . -name gradlew | head -n 1)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "ERROR: No se encontró el archivo gradlew en ninguna parte del repositorio."
+            exit 1
+          fi
+          echo "Se encontró gradlew en: $GRADLEW_PATH"
+          chmod +x "$GRADLEW_PATH"
+          # Guardar la ruta del directorio para los siguientes pasos
+          echo "PROJECT_ROOT=$(dirname "$GRADLEW_PATH")" >> $GITHUB_ENV
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: |
+          cd ${{ env.PROJECT_ROOT }}
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: |
+          cd ${{ env.PROJECT_ROOT }}
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: nexus-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: "**/build/outputs/apk/debug/*.apk"
           retention-days: 30
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: nexus-release-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: "**/build/outputs/apk/release/*.apk"
           retention-days: 30
 
       - name: Upload Build Reports
@@ -64,5 +68,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-reports
-          path: app/build/reports/
+          path: "**/build/reports/"
           retention-days: 7
