@@ -27,29 +27,32 @@ jobs:
 
       - name: Fix Project and Run Build
         run: |
-          # 1. Encontrar la raíz real del proyecto (donde está settings.gradle.kts)
+          # 1. Encontrar la raíz real del proyecto
           SETTINGS_FILE=$(find . -name settings.gradle.kts | head -n 1)
           if [ -z "$SETTINGS_FILE" ]; then
-            echo "ERROR: No se encontró settings.gradle.kts. Revisa la subida de archivos."
+            echo "ERROR: No se encontró settings.gradle.kts."
             exit 1
           fi
           PROJECT_ROOT=$(pwd)/$(dirname "$SETTINGS_FILE")
           echo "Proyecto detectado en: $PROJECT_ROOT"
           cd "$PROJECT_ROOT"
 
-          # 2. Descargar un Gradle Wrapper funcional directamente de los servidores de Gradle
-          # Esto soluciona el problema de la carpeta gradle/wrapper faltante o corrupta
+          # 2. Descargar Gradle Wrapper funcional (URLs oficiales corregidas)
           echo "Descargando Gradle Wrapper..."
           mkdir -p gradle/wrapper
-          curl -L https://raw.githubusercontent.com/gradle/gradle/master/gradlew -o gradlew
-          curl -L https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+          curl -L https://raw.githubusercontent.com/gradle/gradle/v8.2.1/gradlew -o gradlew
+          curl -L https://raw.githubusercontent.com/gradle/gradle/v8.2.1/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
           chmod +x gradlew
           
-          # 3. Configurar la versión de Gradle en el archivo de propiedades
-          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.2.2-bin.zip" > gradle/wrapper/gradle-wrapper.properties
+          # 3. Configurar la distribución oficial de Gradle (URL 8.2.1 estable )
+          echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
+          echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.2.1-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
 
-          # 4. Ejecutar la compilación
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          # 4. Ejecutar la compilación con límites de memoria para evitar fallos
+          ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m"
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
