@@ -68,6 +68,9 @@ android {
             excludes += "/META-INF/LICENSE.txt"
             excludes += "/META-INF/NOTICE"
             excludes += "/META-INF/NOTICE.txt"
+            // Exclusiones adicionales para Apache POI y Tesseract
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/io.netty.versions.properties"
         }
     }
 }
@@ -113,17 +116,18 @@ dependencies {
     // PDF Parsing - PdfBox Android
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
 
-    // Office Documents - Apache POI
+    // Office Documents - Apache POI (Corregido con Scratchpad)
     implementation("org.apache.poi:poi:5.2.5")
+    implementation("org.apache.poi:poi-scratchpad:5.2.5")
     implementation("org.apache.poi:poi-ooxml:5.2.5") {
         exclude(group = "org.apache.xmlgraphics")
         exclude(group = "org.apache.logging.log4j")
     }
 
-    // OCR - Tesseract
-    implementation("cz.adaptech.tesseract4android:tesseract4android:4.7.0")
+    // OCR - Tesseract (Cambiado a tess-two para coincidir con tu código)
+    implementation("com.rmtheis:tess-two:9.1.0")
 
-    // Networking - Ktor (for local network server)
+    // Networking - Ktor
     implementation("io.ktor:ktor-server-core:2.3.7")
     implementation("io.ktor:ktor-server-netty:2.3.7")
     implementation("io.ktor:ktor-server-content-negotiation:2.3.7")
@@ -151,8 +155,6 @@ dependencies {
     // Accompanist
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
-
-    // NSD (Network Service Discovery) is part of Android SDK - no extra dependency needed
 
     // Testing
     testImplementation("junit:junit:4.13.2")
