@@ -25,29 +25,30 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Fix Project Structure and Gradle
+      - name: Fix Project and Run Build
         run: |
-          # 1. Encontrar dónde está el archivo build.gradle.kts
-          BUILD_FILE=$(find . -name build.gradle.kts -not -path "*/app/*" | head -n 1)
-          if [ -z "$BUILD_FILE" ]; then
-            echo "ERROR: No se encontró el archivo de configuración del proyecto."
+          # 1. Encontrar la raíz real del proyecto (donde está settings.gradle.kts)
+          SETTINGS_FILE=$(find . -name settings.gradle.kts | head -n 1)
+          if [ -z "$SETTINGS_FILE" ]; then
+            echo "ERROR: No se encontró settings.gradle.kts. Revisa la subida de archivos."
             exit 1
           fi
-          PROJECT_ROOT=$(dirname "$BUILD_FILE")
+          PROJECT_ROOT=$(pwd)/$(dirname "$SETTINGS_FILE")
           echo "Proyecto detectado en: $PROJECT_ROOT"
           cd "$PROJECT_ROOT"
 
-          # 2. Forzar la instalación de un Gradle Wrapper limpio
+          # 2. Descargar un Gradle Wrapper funcional directamente de los servidores de Gradle
           # Esto soluciona el problema de la carpeta gradle/wrapper faltante o corrupta
-          gradle wrapper --gradle-version 8.2.2
+          echo "Descargando Gradle Wrapper..."
+          mkdir -p gradle/wrapper
+          curl -L https://raw.githubusercontent.com/gradle/gradle/master/gradlew -o gradlew
+          curl -L https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
           chmod +x gradlew
           
-          # Guardar la ruta para los siguientes pasos
-          echo "FINAL_PROJECT_PATH=$(pwd)" >> $GITHUB_ENV
+          # 3. Configurar la versión de Gradle en el archivo de propiedades
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.2.2-bin.zip" > gradle/wrapper/gradle-wrapper.properties
 
-      - name: Build Debug APK
-        run: |
-          cd ${{ env.FINAL_PROJECT_PATH }}
+          # 4. Ejecutar la compilación
           ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload Debug APK
@@ -58,7 +59,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Build Reports
-        if: failure()
+        if: failure( )
         uses: actions/upload-artifact@v4
         with:
           name: build-reports
