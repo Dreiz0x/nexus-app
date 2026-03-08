@@ -68,9 +68,10 @@ android {
             excludes += "/META-INF/LICENSE.txt"
             excludes += "/META-INF/NOTICE"
             excludes += "/META-INF/NOTICE.txt"
-            // Exclusiones adicionales para Apache POI y Tesseract
             excludes += "META-INF/INDEX.LIST"
             excludes += "META-INF/io.netty.versions.properties"
+            // Exclusiones para Apache POI
+            excludes += "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
         }
     }
 }
@@ -116,7 +117,7 @@ dependencies {
     // PDF Parsing - PdfBox Android
     implementation("com.tom-roush:pdfbox-android:2.0.27.0")
 
-    // Office Documents - Apache POI (Corregido con Scratchpad)
+    // Office Documents - Apache POI (Corregido)
     implementation("org.apache.poi:poi:5.2.5")
     implementation("org.apache.poi:poi-scratchpad:5.2.5")
     implementation("org.apache.poi:poi-ooxml:5.2.5") {
@@ -124,8 +125,8 @@ dependencies {
         exclude(group = "org.apache.logging.log4j")
     }
 
-    // OCR - Tesseract (Cambiado a tess-two para coincidir con tu código)
-    implementation("com.rmtheis:tess-two:9.1.0")
+    // OCR - Tesseract (Cambiado a tesseract4android para coincidir con tu DocumentParser.kt)
+    implementation("cz.adaptech.tesseract4android:tesseract4android:4.7.0")
 
     // Networking - Ktor
     implementation("io.ktor:ktor-server-core:2.3.7")
@@ -136,23 +137,13 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp:2.3.7")
     implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
 
-    // OkHttp for API calls
+    // Otros
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
-    // Gson for JSON
     implementation("com.google.code.gson:gson:2.10.1")
-
-    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-
-    // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
-
-    // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.5.0")
-
-    // Accompanist
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
 
