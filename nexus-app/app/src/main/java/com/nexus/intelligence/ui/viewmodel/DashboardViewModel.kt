@@ -28,29 +28,30 @@ class DashboardViewModel @Inject constructor(
     private val _recentDocuments = MutableStateFlow<List<DocumentInfo>>(emptyList())
     val recentDocuments: StateFlow<List<DocumentInfo>> = _recentDocuments.asStateFlow()
 
+    // Usamos un valor por defecto para evitar errores si el flujo es nulo inicialmente
     val indexingProgress: StateFlow<IndexingProgress> = indexDocumentsUseCase.progress
-        .stateIn(viewModelScope, SharingStarted.Lazily, IndexingProgress())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), IndexingProgress())
 
     init {
         loadDashboardData()
     }
 
     private fun loadDashboardData() {
-        // Collect document count
+        // Recolectar conteo de documentos
         viewModelScope.launch {
             getDashboardStatsUseCase.getDocumentCount().collect { count ->
                 _dashboardStats.update { it.copy(totalDocuments = count) }
             }
         }
 
-        // Collect recent documents
+        // Recolectar documentos recientes
         viewModelScope.launch {
             getDashboardStatsUseCase.getRecentDocuments(20).collect { docs ->
                 _recentDocuments.value = docs
             }
         }
 
-        // Collect all documents for type distribution
+        // Recolectar todos los documentos para distribución por tipo
         viewModelScope.launch {
             getDashboardStatsUseCase.getAllDocuments().collect { docs ->
                 val byType = docs.groupBy { it.fileType }.mapValues { it.value.size }
@@ -58,7 +59,7 @@ class DashboardViewModel @Inject constructor(
             }
         }
 
-        // Collect indexing stats
+        // Recolectar estadísticas de indexación
         viewModelScope.launch {
             getDashboardStatsUseCase.getIndexingStats().collect { stats ->
                 if (stats != null) {
@@ -72,7 +73,7 @@ class DashboardViewModel @Inject constructor(
             }
         }
 
-        // Check API status
+        // Verificar estado de la API
         viewModelScope.launch {
             val apiOnline = getDashboardStatsUseCase.isApiAvailable()
             _dashboardStats.update { it.copy(apiOnline = apiOnline) }
