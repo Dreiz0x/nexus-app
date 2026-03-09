@@ -1,13 +1,10 @@
+// Contenido completo y corregido para DashboardScreen.kt
 package com.nexus.intelligence.ui.screens.dashboard
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +17,8 @@ import com.nexus.intelligence.domain.model.DocumentInfo
 import com.nexus.intelligence.ui.components.*
 import com.nexus.intelligence.ui.theme.NexusColors
 import com.nexus.intelligence.ui.viewmodel.DashboardViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 
 @Composable
 fun DashboardScreen(
@@ -38,7 +37,6 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // ── Header ───────────────────────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -69,7 +67,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Search Bar ───────────────────────────────────────
             HudSearchBar(
                 query = searchQuery,
                 onQueryChange = { viewModel.updateSearchQuery(it) },
@@ -78,7 +75,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Stats Panel ──────────────────────────────────────
             HudSectionHeader(title = "CORE ANALYTICS")
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -101,12 +97,11 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Indexing Progress ────────────────────────────────
             if (stats.isScanning) {
                 HudSectionHeader(title = "INDEXING IN PROGRESS")
                 Spacer(modifier = Modifier.height(8.dp))
                 HolographicCard {
-                    Column {
+                    Column(modifier = Modifier.padding(8.dp)) {
                         Text(
                             text = "SCANNING: ${indexingProgress.currentFile}",
                             style = MaterialTheme.typography.labelSmall,
@@ -114,13 +109,14 @@ fun DashboardScreen(
                             maxLines = 1
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        HudProgressBar(progress = indexingProgress.progress)
+                        // CORRECCIÓN: Se pasa el progreso como un Float entre 0.0 y 1.0
+                        val progressValue = indexingProgress.progress / 100f
+                        HudProgressBar(progress = progressValue)
                     }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // ── Recent Documents ─────────────────────────────────
             HudSectionHeader(title = "RECENT INTELLIGENCE")
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -154,7 +150,7 @@ private fun StatCard(
         modifier = modifier,
         borderColor = color.copy(alpha = 0.5f)
     ) {
-        Column {
+        Column(modifier = Modifier.padding(8.dp)) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
