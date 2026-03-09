@@ -66,12 +66,26 @@ android {
 }
 
 dependencies {
-    // Core
+    // 1. SOLUCIÓN DEFINITIVA A CLASES DUPLICADAS
+    // Esto obliga a Gradle a ignorar la librería vacía que causa el conflicto
+    modules {
+        module("com.google.guava:listenablefuture") {
+            replacedBy("com.google.guava:guava", "listenablefuture is part of guava")
+        }
+    }
+
+    // Forzamos una versión única de Guava para evitar conflictos de versiones
+    constraints {
+        implementation("com.google.guava:guava:31.1-android") {
+            because("Evita el conflicto entre versiones JRE y Android de Guava")
+        }
+    }
+
+    // 2. CORE Y UI (Jetpack Compose)
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
     
-    // Compose
     implementation(platform("androidx.compose:compose-bom:2023.10.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
@@ -79,23 +93,26 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.7.6")
     
-    // Hilt
+    // 3. INYECCIÓN DE DEPENDENCIAS (Hilt)
     implementation("com.google.dagger:hilt-android:2.50")
     ksp("com.google.dagger:hilt-android-compiler:2.50")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     
-    // Room
+    // 4. BASE DE DATOS (Room)
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
     
-    // Document Parsers
+    // 5. PARSERS DE DOCUMENTOS (Apache POI, iText, Tesseract)
+    // Excluimos listenablefuture de cada librería que pueda traerlo
     implementation("com.itextpdf:itext7-core:7.2.5")
-    implementation("org.apache.poi:poi-ooxml:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3") {
+        exclude(group = "com.google.guava", module = "listenablefuture")
+    }
     implementation("com.rmtheis:tess-two:9.1.0")
     
-    // Network
+    // 6. RED Y API (Ktor, Retrofit)
     implementation("io.ktor:ktor-server-core:2.3.7")
     implementation("io.ktor:ktor-server-netty:2.3.7")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
