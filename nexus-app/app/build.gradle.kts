@@ -66,18 +66,13 @@ android {
 }
 
 dependencies {
-    // 1. SOLUCIÓN DEFINITIVA A CLASES DUPLICADAS
-    // Esto obliga a Gradle a ignorar la librería vacía que causa el conflicto
+    // 1. SOLUCIÓN DEFINITIVA A CLASES DUPLICADAS Y CONFLICTOS DE GUAVA
+    // Forzamos a que TODO el proyecto use la versión de Android de Guava
+    implementation("com.google.guava:guava:31.1-android")
+    
     modules {
         module("com.google.guava:listenablefuture") {
             replacedBy("com.google.guava:guava", "listenablefuture is part of guava")
-        }
-    }
-
-    // Forzamos una versión única de Guava para evitar conflictos de versiones
-    constraints {
-        implementation("com.google.guava:guava:31.1-android") {
-            because("Evita el conflicto entre versiones JRE y Android de Guava")
         }
     }
 
@@ -105,9 +100,10 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion")
     
     // 5. PARSERS DE DOCUMENTOS (Apache POI, iText, Tesseract)
-    // Excluimos listenablefuture de cada librería que pueda traerlo
+    // Excluimos explícitamente cualquier versión de Guava que traigan estas librerías
     implementation("com.itextpdf:itext7-core:7.2.5")
     implementation("org.apache.poi:poi-ooxml:5.2.3") {
+        exclude(group = "com.google.guava", module = "guava")
         exclude(group = "com.google.guava", module = "listenablefuture")
     }
     implementation("com.rmtheis:tess-two:9.1.0")
