@@ -166,4 +166,3 @@ private fun StatCard(
         }
     }
 }
-```
