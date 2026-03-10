@@ -1,3 +1,4 @@
+build.gradle.kts
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -15,11 +16,8 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
@@ -31,32 +29,26 @@ android {
             )
         }
     }
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-    
-    buildFeatures {
-        compose = true
-    }
-    
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
-    }
-    
+
+    kotlinOptions { jvmTarget = "17" }
+
+    buildFeatures { compose = true }
+
+    composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/DEPENDENCIES"
         }
     }
 
-    // --- ESTA ES LA SOLUCIÓN ---
-    // Forzamos al sistema a buscar los recursos en cualquier subcarpeta de res
     sourceSets {
         getByName("main") {
             res.srcDirs("src/main/res")
@@ -83,7 +75,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    // ✅ AÑADIDO: FolderOpen, AccessTime, Storage, Dashboard, Map, etc.
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.7.6")
 
@@ -98,12 +89,10 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
-    // 5. PARSERS DE DOCUMENTOS
-    // ✅ REEMPLAZADO itext7 por pdfbox-android (el código usa imports tom_roush)
+    // 5. PARSERS
     implementation("com.tom-roush:pdfbox-android:2.0.27.0") {
         exclude(group = "com.google.guava")
     }
-    // ✅ AÑADIDO poi-scratchpad: necesario para hwpf (.doc) y hslf (.ppt)
     implementation("org.apache.poi:poi:5.2.3") {
         exclude(group = "com.google.guava")
     }
@@ -113,20 +102,17 @@ dependencies {
     implementation("org.apache.poi:poi-scratchpad:5.2.3") {
         exclude(group = "com.google.guava")
     }
-    // ✅ REEMPLAZADO tess-two por tesseract4android (el código usa cz.adaptech.TessBaseAPI)
     implementation("cz.adaptech.tesseract4android:tesseract4android:4.7.0")
 
     // 6. RED
-    // ✅ OkHttp explícito (toRequestBody, toMediaType, response.body)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    // ✅ CORREGIDO: ktor-SERVER → ktor-CLIENT (server no tiene sentido en Android)
-    // ✅ AÑADIDO: content-negotiation y gson para NetworkService
+    // ✅ Ktor SERVER (servidor WiFi local) — con content-negotiation que faltaba
     val ktorVersion = "2.3.7"
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-gson:$ktorVersion")
 }
