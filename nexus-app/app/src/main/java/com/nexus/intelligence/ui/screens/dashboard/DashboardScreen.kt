@@ -1,10 +1,11 @@
-// Contenido completo y corregido para DashboardScreen.kt
+DashboardScreen.kt
 package com.nexus.intelligence.ui.screens.dashboard
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,8 +18,6 @@ import com.nexus.intelligence.domain.model.DocumentInfo
 import com.nexus.intelligence.ui.components.*
 import com.nexus.intelligence.ui.theme.NexusColors
 import com.nexus.intelligence.ui.viewmodel.DashboardViewModel
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 
 @Composable
 fun DashboardScreen(
@@ -77,7 +76,7 @@ fun DashboardScreen(
 
             HudSectionHeader(title = "CORE ANALYTICS")
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -109,9 +108,14 @@ fun DashboardScreen(
                             maxLines = 1
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        // CORRECCIÓN: Se pasa el progreso como un Float entre 0.0 y 1.0
+                        // ✅ CORREGIDO: progress como lambda (Material3 API actual)
                         val progressValue = indexingProgress.progress / 100f
-                        HudProgressBar(progress = progressValue)
+                        LinearProgressIndicator(
+                            progress = { progressValue },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = NexusColors.Cyan,
+                            trackColor = NexusColors.Cyan.copy(alpha = 0.2f)
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
@@ -119,7 +123,7 @@ fun DashboardScreen(
 
             HudSectionHeader(title = "RECENT INTELLIGENCE")
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.weight(1f)
@@ -130,10 +134,7 @@ fun DashboardScreen(
                         onClick = { onDocumentClick(doc) }
                     )
                 }
-                
-                item {
-                    Spacer(modifier = Modifier.height(80.dp))
-                }
+                item { Spacer(modifier = Modifier.height(80.dp)) }
             }
         }
     }
@@ -165,4 +166,4 @@ private fun StatCard(
             )
         }
     }
-}
+} 
