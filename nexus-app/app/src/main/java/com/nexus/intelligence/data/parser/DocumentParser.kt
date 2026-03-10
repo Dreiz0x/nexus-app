@@ -1,8 +1,8 @@
+DocumentParser.kt
 package com.nexus.intelligence.data.parser
 
 import android.content.Context
 import android.graphics.BitmapFactory
-import android.net.Uri
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
@@ -61,8 +61,6 @@ class DocumentParser @Inject constructor(
         }
     }
 
-    // ── PDF Parser ───────────────────────────────────────────────────
-
     private fun parsePdf(file: File): ParseResult {
         initialize()
         return try {
@@ -76,8 +74,6 @@ class DocumentParser @Inject constructor(
             ParseResult("", 0, false, "PDF parse error: ${e.message}")
         }
     }
-
-    // ── Word Parsers ─────────────────────────────────────────────────
 
     private fun parseDoc(file: File): ParseResult {
         return try {
@@ -96,14 +92,10 @@ class DocumentParser @Inject constructor(
             val fis = FileInputStream(file)
             val doc = XWPFDocument(fis)
             val sb = StringBuilder()
-            for (paragraph in doc.paragraphs) {
-                sb.appendLine(paragraph.text)
-            }
+            for (paragraph in doc.paragraphs) sb.appendLine(paragraph.text)
             for (table in doc.tables) {
                 for (row in table.rows) {
-                    for (cell in row.tableCells) {
-                        sb.append(cell.text).append("\t")
-                    }
+                    for (cell in row.tableCells) sb.append(cell.text).append("\t")
                     sb.appendLine()
                 }
             }
@@ -114,8 +106,6 @@ class DocumentParser @Inject constructor(
         }
     }
 
-    // ── Excel Parsers ────────────────────────────────────────────────
-
     private fun parseXls(file: File): ParseResult {
         return try {
             val fis = FileInputStream(file)
@@ -125,9 +115,7 @@ class DocumentParser @Inject constructor(
                 val sheet = workbook.getSheetAt(i)
                 sb.appendLine("--- Sheet: ${sheet.sheetName} ---")
                 for (row in sheet) {
-                    for (cell in row) {
-                        sb.append(cell.toString()).append("\t")
-                    }
+                    for (cell in row) sb.append(cell.toString()).append("\t")
                     sb.appendLine()
                 }
             }
@@ -147,9 +135,7 @@ class DocumentParser @Inject constructor(
                 val sheet = workbook.getSheetAt(i)
                 sb.appendLine("--- Sheet: ${sheet.sheetName} ---")
                 for (row in sheet) {
-                    for (cell in row) {
-                        sb.append(cell.toString()).append("\t")
-                    }
+                    for (cell in row) sb.append(cell.toString()).append("\t")
                     sb.appendLine()
                 }
             }
@@ -159,8 +145,6 @@ class DocumentParser @Inject constructor(
             ParseResult("", 0, false, "XLSX parse error: ${e.message}")
         }
     }
-
-    // ── PowerPoint Parsers ───────────────────────────────────────────
 
     private fun parsePpt(file: File): ParseResult {
         return try {
@@ -206,27 +190,20 @@ class DocumentParser @Inject constructor(
         }
     }
 
-    // ── Text Parser ──────────────────────────────────────────────────
-
     private fun parseTxt(file: File): ParseResult {
         return try {
-            val text = file.readText(Charsets.UTF_8)
-            ParseResult(text.trim(), 1)
+            ParseResult(file.readText(Charsets.UTF_8).trim(), 1)
         } catch (e: Exception) {
             ParseResult("", 0, false, "TXT parse error: ${e.message}")
         }
     }
-
-    // ── CSV Parser ───────────────────────────────────────────────────
 
     private fun parseCsv(file: File): ParseResult {
         return try {
             val sb = StringBuilder()
             val reader = BufferedReader(InputStreamReader(FileInputStream(file)))
             var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                sb.appendLine(line)
-            }
+            while (reader.readLine().also { line = it } != null) sb.appendLine(line)
             reader.close()
             ParseResult(sb.toString().trim(), 1)
         } catch (e: Exception) {
@@ -234,18 +211,15 @@ class DocumentParser @Inject constructor(
         }
     }
 
-    // ── OCR Image Parser ─────────────────────────────────────────────
-
     private fun parseImage(file: File): ParseResult {
         return try {
-            if (tessBaseAPI == null) {
-                initTesseract()
-            }
+            if (tessBaseAPI == null) initTesseract()
             val api = tessBaseAPI ?: return ParseResult("", 0, false, "Tesseract not initialized")
             val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                 ?: return ParseResult("", 0, false, "Could not decode image")
             api.setImage(bitmap)
-            val text = api.utF8Text ?: ""
+            // ✅ CORREGIDO: utF8Text → getUTF8Text() (API de tesseract4android)
+            val text = api.getUTF8Text() ?: ""
             bitmap.recycle()
             ParseResult(text.trim(), 1)
         } catch (e: Exception) {
@@ -256,28 +230,22 @@ class DocumentParser @Inject constructor(
     private fun initTesseract() {
         val tessDataPath = File(context.filesDir, "tesseract")
         val tessDataDir = File(tessDataPath, "tessdata")
-        if (!tessDataDir.exists()) {
-            tessDataDir.mkdirs()
-        }
+        if (!tessDataDir.exists()) tessDataDir.mkdirs()
 
-        // Copy trained data from assets if not present
         val engFile = File(tessDataDir, "eng.traineddata")
         if (!engFile.exists()) {
             try {
                 context.assets.open("tessdata/eng.traineddata").use { input ->
-                    engFile.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
+                    engFile.outputStream().use { output -> input.copyTo(output) }
                 }
             } catch (e: Exception) {
-                // Trained data not bundled, OCR will be unavailable
                 return
             }
         }
 
-        tessBaseAPI = TessBaseAPI().apply {
-            init(tessDataPath.absolutePath, "eng")
-        }
+        // ✅ CORREGIDO: .apply { init(...) } → constructor + init separado
+        tessBaseAPI = TessBaseAPI()
+        tessBaseAPI?.init(tessDataPath.absolutePath, "eng")
     }
 
     fun release() {
