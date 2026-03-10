@@ -1,3 +1,4 @@
+
 package com.nexus.intelligence.ui.screens.dashboard
 
 import androidx.compose.foundation.layout.*
@@ -107,10 +108,9 @@ fun DashboardScreen(
                             maxLines = 1
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        // ✅ CORREGIDO: progress como lambda (Material3 API actual)
                         val progressValue = indexingProgress.progress / 100f
                         LinearProgressIndicator(
-                            progress = { progressValue },
+                            progress = progressValue,
                             modifier = Modifier.fillMaxWidth(),
                             color = NexusColors.Cyan,
                             trackColor = NexusColors.Cyan.copy(alpha = 0.2f)
@@ -165,4 +165,5 @@ private fun StatCard(
             )
         }
     }
-} 
+}
+```
