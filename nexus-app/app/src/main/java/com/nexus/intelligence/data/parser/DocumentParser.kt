@@ -5,8 +5,7 @@ import android.graphics.BitmapFactory
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
-import cz.adaptech.tesseract4android.TessBaseAPI
-import org.apache.poi.hwpf.HWPFDocument
+import com.googlecode.tesseract.android.TessBaseAPI 
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
