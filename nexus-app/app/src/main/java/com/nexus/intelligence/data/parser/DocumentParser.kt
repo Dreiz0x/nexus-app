@@ -5,11 +5,10 @@ import android.graphics.BitmapFactory
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
-import com.googlecode.tesseract.android.TessBaseAPI 
+import com.googlecode.tesseract.android.TessBaseAPI
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import org.apache.poi.hslf.usermodel.HSLFSlideShow
 import org.apache.poi.xslf.usermodel.XMLSlideShow
 import java.io.BufferedReader
 import java.io.File
@@ -74,15 +73,8 @@ class DocumentParser @Inject constructor(
     }
 
     private fun parseDoc(file: File): ParseResult {
-        return try {
-            val fis = FileInputStream(file)
-            val doc = HWPFDocument(fis)
-            val text = doc.documentText
-            fis.close()
-            ParseResult(text.trim(), 1)
-        } catch (e: Exception) {
-            ParseResult("", 0, false, "DOC parse error: ${e.message}")
-        }
+        // Formato .doc (Word 97-2003) no soportado en Android — usar .docx
+        return ParseResult("", 0, false, "Formato .doc no soportado, convierte a .docx")
     }
 
     private fun parseDocx(file: File): ParseResult {
@@ -145,25 +137,8 @@ class DocumentParser @Inject constructor(
     }
 
     private fun parsePpt(file: File): ParseResult {
-        return try {
-            val fis = FileInputStream(file)
-            val ppt = HSLFSlideShow(fis)
-            val sb = StringBuilder()
-            var slideNum = 0
-            for (slide in ppt.slides) {
-                slideNum++
-                sb.appendLine("--- Slide $slideNum ---")
-                for (shape in slide.shapes) {
-                    if (shape is org.apache.poi.hslf.usermodel.HSLFTextShape) {
-                        sb.appendLine(shape.text)
-                    }
-                }
-            }
-            fis.close()
-            ParseResult(sb.toString().trim(), slideNum)
-        } catch (e: Exception) {
-            ParseResult("", 0, false, "PPT parse error: ${e.message}")
-        }
+        // Formato .ppt (PowerPoint 97-2003) no soportado en Android — usar .pptx
+        return ParseResult("", 0, false, "Formato .ppt no soportado, convierte a .pptx")
     }
 
     private fun parsePptx(file: File): ParseResult {
@@ -216,7 +191,6 @@ class DocumentParser @Inject constructor(
             val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                 ?: return ParseResult("", 0, false, "Could not decode image")
             api.setImage(bitmap)
-            // ✅ CORREGIDO: utF8Text → getUTF8Text() (API de tesseract4android)
             val text = api.getUTF8Text() ?: ""
             bitmap.recycle()
             ParseResult(text.trim(), 1)
@@ -241,7 +215,6 @@ class DocumentParser @Inject constructor(
             }
         }
 
-        // ✅ CORREGIDO: .apply { init(...) } → constructor + init separado
         tessBaseAPI = TessBaseAPI()
         tessBaseAPI?.init(tessDataPath.absolutePath, "eng")
     }
