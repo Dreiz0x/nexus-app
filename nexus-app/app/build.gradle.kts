@@ -101,7 +101,7 @@ dependencies {
     }
     implementation("org.apache.poi:poi-ooxml:5.2.3") {
         exclude(group = "com.google.guava")
-    
+    }
     implementation("cz.adaptech.tesseract4android:tesseract4android:4.7.0")
 
     // 6. RED
