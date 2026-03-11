@@ -6,6 +6,7 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.Environment
 import android.os.FileObserver
@@ -109,7 +110,6 @@ class IndexingService : Service() {
     }
 
     private fun setupFileWatchers(directories: List<String>) {
-        // Clean up existing watchers
         fileObservers.forEach { it.stopWatching() }
         fileObservers.clear()
 
@@ -166,7 +166,15 @@ class IndexingService : Service() {
             .setOngoing(true)
             .build()
 
-        startForeground(NOTIFICATION_ID, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun updateNotification(title: String, text: String) {
@@ -197,7 +205,6 @@ class IndexingService : Service() {
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            // Restart indexing service with default directories
             IndexingService.startScan(
                 context,
                 listOf(Environment.getExternalStorageDirectory().absolutePath)
