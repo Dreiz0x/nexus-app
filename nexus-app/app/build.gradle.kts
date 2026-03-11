@@ -43,6 +43,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/INDEX.LIST"
             excludes += "/META-INF/DEPENDENCIES"
+            excludes += "META-INF/io.netty.versions.properties"
         }
     }
 
@@ -54,11 +55,9 @@ android {
     }
 }
 
-// ✅ Excluir openmp globalmente antes de que entre al classpath
 configurations.all {
     exclude(group = "cz.adaptech.tesseract4android", module = "tesseract4android-openmp")
 }
-
 
 dependencies {
     // 1. GUAVA
