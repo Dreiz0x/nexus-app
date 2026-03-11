@@ -99,7 +99,7 @@ dependencies {
     implementation("org.apache.poi:poi-scratchpad:5.2.3") {
         exclude(group = "com.google.guava")
     }
-    implementation("cz.adaptech.tesseract4android:tesseract4android:4.7.0")
+    implementation("cz.adaptech:tesseract4android:4.7.0")
 
     // 6. RED
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
