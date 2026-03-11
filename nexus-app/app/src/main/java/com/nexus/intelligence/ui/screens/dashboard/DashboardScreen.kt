@@ -108,7 +108,7 @@ fun DashboardScreen(
                             maxLines = 1
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        val progressValue = indexingProgress.progress / 100f
+                        val progressValue = indexingProgress.progressFraction
                         LinearProgressIndicator(
                             progress = progressValue,
                             modifier = Modifier.fillMaxWidth(),
