@@ -7,14 +7,12 @@ import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.os.IBinder
-import com.google.gson.Gson
-import com.nexus.intelligence.domain.model.DocumentInfo
 import com.nexus.intelligence.domain.model.NetworkDevice
 import com.nexus.intelligence.domain.repository.DocumentRepository
 import dagger.hilt.android.AndroidEntryPoint
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.server.cio.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -137,7 +135,7 @@ class NexusNetworkManager @Inject constructor() {
     }
 }
 
-// ── Local HTTP Server (Ktor) ─────────────────────────────────────
+// ── Local HTTP Server (Ktor CIO) ─────────────────────────────────
 
 @Singleton
 class NexusLocalServer @Inject constructor(
@@ -150,7 +148,7 @@ class NexusLocalServer @Inject constructor(
     fun start(port: Int = 9090) {
         if (server != null) return
 
-        server = embeddedServer(Netty, port = port, host = "0.0.0.0") {
+        server = embeddedServer(CIO, port = port, host = "0.0.0.0") {
             install(ContentNegotiation) {
                 gson {
                     setPrettyPrinting()
